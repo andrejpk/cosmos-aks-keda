@@ -4,7 +4,7 @@ targetScope = 'subscription'
 param rgName string
 param acrName string
 param cosmosName string
-param location string =deployment().location
+param location string = deployment().location
 param throughput int = 1000
 
 var baseName = rgName
@@ -26,12 +26,10 @@ module aksIdentity 'modules/Identity/userassigned.bicep' = {
   }
 }
 
-
 resource vnetAKSRes 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   scope: resourceGroup(rg.name)
   name: vnetAKS.outputs.vnetName
 }
-
 
 module vnetAKS 'modules/vnet/vnet.bicep' = {
   scope: resourceGroup(rg.name)
@@ -55,7 +53,6 @@ module acrDeploy 'modules/acr/acr.bicep' = {
   }
 }
 
-/*
 // Uncomment this to configure log analytics workspace
 
 module akslaworkspace 'modules/laworkspace/la.bicep' = {
@@ -66,15 +63,11 @@ module akslaworkspace 'modules/laworkspace/la.bicep' = {
     location: location
   }
 }
-*/
-
 
 resource subnetaks 'Microsoft.Network/virtualNetworks/subnets@2020-11-01' existing = {
   name: 'aksSubNet'
   parent: vnetAKSRes
 }
-
-
 
 module aksMangedIDOperator 'modules/Identity/role.bicep' = {
   name: 'aksMangedIDOperator'
@@ -85,41 +78,39 @@ module aksMangedIDOperator 'modules/Identity/role.bicep' = {
   }
 }
 
-
 module aksCluster 'modules/aks/aks.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksCluster'
   dependsOn: [
-    aksMangedIDOperator    
+    aksMangedIDOperator
   ]
   params: {
     location: location
     basename: baseName
-   // logworkspaceid: akslaworkspace.outputs.laworkspaceId   // Uncomment this to configure log analytics workspace
+    // logworkspaceid: akslaworkspace.outputs.laworkspaceId   // Uncomment this to configure log analytics workspace
     podBindingSelector: 'cosmosdb-order-processor-identity'
     podIdentityName: 'cosmosdb-order-processor-identity'
     podIdentityNamespace: 'cosmosdb-order-processor'
-    subnetId: subnetaks.id  
+    subnetId: subnetaks.id
     clientId: aksIdentity.outputs.clientId
     identityid: aksIdentity.outputs.identityid
     identity: {
-      '${aksIdentity.outputs.identityid}' : {}
+      '${aksIdentity.outputs.identityid}': {}
     }
     principalId: aksIdentity.outputs.principalId
+    laworkspaceId: akslaworkspace.outputs.laworkspaceId
   }
 }
 
-module cosmosdb 'modules/cosmos/cosmos.bicep'={
-  scope:resourceGroup(rg.name)
-  name:'cosmosDB'
-  params:{
+module cosmosdb 'modules/cosmos/cosmos.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'cosmosDB'
+  params: {
     location: location
-    principalId:aksIdentity.outputs.principalId
-    accountName:cosmosName
-    subNetId: subnetaks.id   // Uncomment this to use VNET
-    throughput:throughput
+    principalId: aksIdentity.outputs.principalId
+    accountName: cosmosName
+    subNetId: subnetaks.id // Uncomment this to use VNET
+    throughput: throughput
   }
 
 }
-
-

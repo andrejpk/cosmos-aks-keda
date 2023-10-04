@@ -3,16 +3,16 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "rgName": {
-      "value": "{Resource Group Name}"
+      "value": "sandbox-cosmos-aks-keda"
     },    
     "cosmosName" :{
-      "value": "{Cosmos DB Account Name}"
+      "value": "sandbox-cosmos-aks-keda"
     },
     "acrName" :{
-      "value": "{ACR Name}"
+      "value": "sandboxcosmosakskeda"
 	},
     "throughput" :{
-        "value": 11000
+        "value": 2000
     }
   }
 }

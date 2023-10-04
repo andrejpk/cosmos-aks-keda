@@ -8,17 +8,18 @@ param location string = resourceGroup().location
 param podBindingSelector string
 param podIdentityName string
 param podIdentityNamespace string
+param laworkspaceId string
 
 //param logworkspaceid string  // Uncomment this to configure log analytics workspace
 
 param subnetId string
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-preview' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-preview' = {
   name: '${basename}aks'
   location: location
   identity: {
     type: 'UserAssigned'
-    userAssignedIdentities: identity   
+    userAssignedIdentities: identity
   }
   properties: {
     kubernetesVersion: '1.26.3'
@@ -28,17 +29,18 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-previ
       {
         name: 'default'
         count: 2
-        vmSize: 'Standard_D4s_v3'
+        // vmSize: 'Standard_D4s_v3'
+        vmSize: 'standard_b4s_v2'
         mode: 'System'
         maxCount: 5
         minCount: 2
         osType: 'Linux'
         osSKU: 'Ubuntu'
-        enableAutoScaling:true
+        enableAutoScaling: true
         maxPods: 50
         type: 'VirtualMachineScaleSets'
-        vnetSubnetID: subnetId  // Uncomment this to configure VNET
-        enableNodePublicIP:false
+        vnetSubnetID: subnetId // Uncomment this to configure VNET
+        enableNodePublicIP: false
       }
     ]
 
@@ -49,63 +51,30 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-previ
       dockerBridgeCidr: '172.17.0.1/16'
       dnsServiceIP: '10.0.0.10'
       serviceCidr: '10.0.0.0/16'
- 
+
     }
     apiServerAccessProfile: {
       enablePrivateCluster: false
     }
     enableRBAC: true
     enablePodSecurityPolicy: false
-    addonProfiles:{
-      /*
-	  // Uncomment this to configure log analytics workspace
-	  omsagent: {
+    addonProfiles: {
+
+      omsagent: {
         config: {
-          logAnalyticsWorkspaceResourceID: logworkspaceid
+          logAnalyticsWorkspaceResourceID: laworkspaceId
         }
         enabled: true
-      }*/
+      }
       azureKeyvaultSecretsProvider: {
         enabled: true
       }
       azurepolicy: {
         enabled: false
       }
+
     }
-    
-    podIdentityProfile: {
-      enabled: true
-      userAssignedIdentities: [
-        {
-          bindingSelector: podBindingSelector
-          identity: {
-            clientId: clientId
-            resourceId: identityid
-            objectId: principalId
-          }
-          name: podIdentityName
-          namespace: podIdentityNamespace
-        }
-      ]
-      userAssignedIdentityExceptions: [
-        {
-          name: 'string'
-          namespace: 'string'
-          podLabels: {}
-        }
-      ]
-    }
+
     disableLocalAccounts: false
   }
 }
-
-
-
-
-
-
-
-
-
-
-
