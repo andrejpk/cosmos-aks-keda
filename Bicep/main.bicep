@@ -106,7 +106,7 @@ module aksCluster 'modules/aks/aks.bicep' = {
 
 module aksWorkloadIdentity 'modules/Identity/workload.bicep' = {
   scope: resourceGroup(rg.name)
-  name: 'managedIdentity'
+  name: 'workloadIdentity'
   params: {
     basename: baseName
     location: location
@@ -121,10 +121,12 @@ module cosmosdb 'modules/cosmos/cosmos.bicep' = {
   name: 'cosmosDB'
   params: {
     location: location
-    principalId: aksIdentity.outputs.principalId
+    principalId: aksWorkloadIdentity.outputs.principalId
     accountName: cosmosName
     subNetId: subnetaks.id // Uncomment this to use VNET
     throughput: throughput
   }
 
 }
+
+output workloadClientId string = aksWorkloadIdentity.outputs.clientId

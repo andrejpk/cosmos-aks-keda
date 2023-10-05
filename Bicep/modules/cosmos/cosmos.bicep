@@ -5,7 +5,7 @@ param location string = resourceGroup().location
 param accountName string// = toLower('rgName-${uniqueString(resourceGroup().id)}-cosmossql')
 
 @description('Friendly name for the SQL Role Definition')
-param roleDefinitionName string = 'My All Acess Role'
+param roleDefinitionName string = 'My All Access Role'
 
 @description('Resource Id of the Subnet to enable service endpoints in Cosmos')
 
