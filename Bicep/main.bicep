@@ -6,6 +6,8 @@ param acrName string
 param cosmosName string
 param location string = deployment().location
 param throughput int = 1000
+param aksNamespace string = 'cosmosdb-order-processor'
+param aksServiceAccount string = 'cosmosdb-order-processor-sa'
 
 var baseName = rgName
 
@@ -102,15 +104,29 @@ module aksCluster 'modules/aks/aks.bicep' = {
   }
 }
 
+module aksWorkloadIdentity 'modules/Identity/workload.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'workloadIdentity'
+  params: {
+    basename: baseName
+    location: location
+    aksNamespace: aksNamespace
+    aksServiceAccount: aksServiceAccount
+    oidcIssuer: aksCluster.outputs.oidcIssuerUrl
+  }
+}
+
 module cosmosdb 'modules/cosmos/cosmos.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'cosmosDB'
   params: {
     location: location
-    principalId: aksIdentity.outputs.principalId
+    principalId: aksWorkloadIdentity.outputs.principalId
     accountName: cosmosName
     subNetId: subnetaks.id // Uncomment this to use VNET
     throughput: throughput
   }
 
 }
+
+output workloadClientId string = aksWorkloadIdentity.outputs.clientId
