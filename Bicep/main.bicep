@@ -6,6 +6,8 @@ param acrName string
 param cosmosName string
 param location string = deployment().location
 param throughput int = 1000
+param aksNamespace string = 'cosmosdb-order-processor'
+param aksServiceAccount string = 'cosmosdb-order-processor-sa'
 
 var baseName = rgName
 
@@ -99,6 +101,18 @@ module aksCluster 'modules/aks/aks.bicep' = {
     }
     principalId: aksIdentity.outputs.principalId
     laworkspaceId: akslaworkspace.outputs.laworkspaceId
+  }
+}
+
+module aksWorkloadIdentity 'modules/Identity/workload.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'managedIdentity'
+  params: {
+    basename: baseName
+    location: location
+    aksNamespace: aksNamespace
+    aksServiceAccount: aksServiceAccount
+    oidcIssuer: aksCluster.outputs.oidcIssuerUrl
   }
 }
 
