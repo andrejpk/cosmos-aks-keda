@@ -64,6 +64,16 @@ module akslaworkspace 'modules/laworkspace/la.bicep' = {
   }
 }
 
+module appInsights 'modules/laworkspace/appInsights.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'appInsights'
+  params: {
+    location: location
+    appInsightsName: resourceGroup().name + '-appinsights'
+    logAnalyticsWorkspaceId: akslaworkspace.outputs.laworkspaceId
+  }
+}
+
 resource subnetaks 'Microsoft.Network/virtualNetworks/subnets@2020-11-01' existing = {
   name: 'aksSubNet'
   parent: vnetAKSRes
@@ -114,3 +124,4 @@ module cosmosdb 'modules/cosmos/cosmos.bicep' = {
   }
 
 }
+
