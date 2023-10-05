@@ -76,5 +76,15 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-previ
     }
 
     disableLocalAccounts: false
+    securityProfile: {
+      workloadIdentity: {
+        enabled: true
+      }
+    }
+    oidcIssuerProfile: {
+      enabled: true
+    }
   }
 }
+
+output oidcIssuerUrl string = aksCluster.properties.oidcIssuerProfile.issuerURL
