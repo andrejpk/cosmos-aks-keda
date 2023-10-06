@@ -9,7 +9,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     Flow_Type: 'Redfield'
-    ApplicationId: appInsightsName
+    // ApplicationId: appInsightsName
     Request_Source: 'IbizaWebAppExtensionCreate'
     WorkspaceResourceId: logAnalyticsWorkspaceId
   }

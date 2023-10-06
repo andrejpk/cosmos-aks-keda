@@ -28,21 +28,23 @@ module aksIdentity 'modules/Identity/userassigned.bicep' = {
   }
 }
 
-resource vnetAKSRes 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  scope: resourceGroup(rg.name)
-  name: vnetAKS.outputs.vnetName
-}
+var vnetName = 'aks-VNet'
 
 module vnetAKS 'modules/vnet/vnet.bicep' = {
   scope: resourceGroup(rg.name)
-  name: 'aksVNet'
+  name: vnetName
   params: {
-    vnetNamePrefix: 'aks'
+    vnetName: vnetName
     location: location
   }
   dependsOn: [
     rg
   ]
+}
+
+resource vnetAKSRes 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
+  scope: resourceGroup(rg.name)
+  name: vnetAKS.name
 }
 
 module acrDeploy 'modules/acr/acr.bicep' = {
@@ -71,7 +73,7 @@ module appInsights 'modules/laworkspace/appInsights.bicep' = {
   name: 'appInsights'
   params: {
     location: location
-    appInsightsName: resourceGroup().name + '-appinsights'
+    appInsightsName: '${rg.name}-appinsights'
     logAnalyticsWorkspaceId: akslaworkspace.outputs.laworkspaceId
   }
 }
@@ -100,16 +102,16 @@ module aksCluster 'modules/aks/aks.bicep' = {
     location: location
     basename: baseName
     // logworkspaceid: akslaworkspace.outputs.laworkspaceId   // Uncomment this to configure log analytics workspace
-    podBindingSelector: 'cosmosdb-order-processor-identity'
-    podIdentityName: 'cosmosdb-order-processor-identity'
-    podIdentityNamespace: 'cosmosdb-order-processor'
+    // podBindingSelector: 'cosmosdb-order-processor-identity'
+    // podIdentityName: 'cosmosdb-order-processor-identity'
+    // podIdentityNamespace: 'cosmosdb-order-processor'
     subnetId: subnetaks.id
-    clientId: aksIdentity.outputs.clientId
-    identityid: aksIdentity.outputs.identityid
+    // clientId: aksIdentity.outputs.clientId
+    // identityid: aksIdentity.outputs.identityid
     identity: {
       '${aksIdentity.outputs.identityid}': {}
     }
-    principalId: aksIdentity.outputs.principalId
+    // principalId: aksIdentity.outputs.principalId
     laworkspaceId: akslaworkspace.outputs.laworkspaceId
   }
 }
@@ -133,10 +135,18 @@ module cosmosdb 'modules/cosmos/cosmos.bicep' = {
     location: location
     principalId: aksWorkloadIdentity.outputs.principalId
     accountName: cosmosName
-    subNetId: subnetaks.id // Uncomment this to use VNET
+    // subNetId: subnetaks.id // Uncomment this to use VNET
     throughput: throughput
   }
+}
 
+module kubeDeployment 'modules/kubernetes/kubernetes.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'kubeDeployment'
+  params: {
+    aksClusterName: aksCluster.outputs.clusterName
+    cosmosDbEndpoint: 'https://sandbox-cosmos-aks-keda.documents.azure.com:443/'
+  }
 }
 
 output workloadClientId string = aksWorkloadIdentity.outputs.clientId

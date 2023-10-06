@@ -1,13 +1,7 @@
 param basename string
 
 param identity object
-param identityid string
-param clientId string
-param principalId string
 param location string = resourceGroup().location
-param podBindingSelector string
-param podIdentityName string
-param podIdentityNamespace string
 param laworkspaceId string
 
 //param logworkspaceid string  // Uncomment this to configure log analytics workspace
@@ -88,3 +82,4 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-previ
 }
 
 output oidcIssuerUrl string = aksCluster.properties.oidcIssuerProfile.issuerURL
+output clusterName string = aksCluster.name

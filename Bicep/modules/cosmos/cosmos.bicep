@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('Cosmos DB account name, max length 44 characters')
-param accountName string// = toLower('rgName-${uniqueString(resourceGroup().id)}-cosmossql')
+param accountName string // = toLower('rgName-${uniqueString(resourceGroup().id)}-cosmossql')
 
 @description('Friendly name for the SQL Role Definition')
 param roleDefinitionName string = 'My All Access Role'
@@ -11,13 +11,13 @@ param roleDefinitionName string = 'My All Access Role'
 
 param throughput int
 
-param subNetId string
+// param subNetId string
 
 @description('Data actions permitted by the Role Definition')
 param dataActions array = [
-    'Microsoft.DocumentDB/databaseAccounts/readMetadata'
-    'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*'
-    'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
+  'Microsoft.DocumentDB/databaseAccounts/readMetadata'
+  'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*'
+  'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
 ]
 
 @description('Object ID of the AAD identity. Must be a GUID.')
@@ -43,10 +43,10 @@ resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
     }
     locations: locations
     databaseAccountOfferType: 'Standard'
-    disableLocalAuth: false      // set to false if you want to use master keys in addition to RBAC
+    disableLocalAuth: false // set to false if you want to use master keys in addition to RBAC
     enableAutomaticFailover: false
-    enableMultipleWriteLocations: false   
-    isVirtualNetworkFilterEnabled: false     // set to false if you want to use public endpoint for Cosmos
+    enableMultipleWriteLocations: false
+    isVirtualNetworkFilterEnabled: false // set to false if you want to use public endpoint for Cosmos
     //uncoment  virtualNetworkRules if you want to use public endpoint for Cosmos
     /*
     virtualNetworkRules: [
@@ -55,13 +55,14 @@ resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
               ignoreMissingVNetServiceEndpoint: false
           }
       ]*/
-      
+
   }
 }
 output cosmosEndpoint string = databaseAccount.name
 
 resource sqlRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2022-05-15' = {
-  name: '${databaseAccount.name}/${roleDefinitionId}'
+  parent: databaseAccount
+  name: roleDefinitionId
   properties: {
     roleName: roleDefinitionName
     type: 'CustomRole'
@@ -77,7 +78,8 @@ resource sqlRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinit
 }
 
 resource sqlRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2022-05-15' = {
-  name: '${databaseAccount.name}/${roleAssignmentId}'
+  parent: databaseAccount
+  name: roleAssignmentId
   properties: {
     roleDefinitionId: sqlRoleDefinition.id
     principalId: principalId
@@ -85,9 +87,9 @@ resource sqlRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignm
   }
 }
 
-
 resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
-  name: '${databaseAccount.name}/StoreDatabase'
+  parent: databaseAccount
+  name: 'StoreDatabase'
   properties: {
     resource: {
       id: 'StoreDatabase'
@@ -96,7 +98,8 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15
 }
 
 resource OrderContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  name: '${database.name}/${'OrderContainer'}'
+  parent: database
+  name: 'OrderContainer'
   properties: {
     resource: {
       id: 'OrderContainer'
@@ -104,31 +107,31 @@ resource OrderContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
         paths: [
           '/Article'
         ]
-      }         
+      }
     }
     options: {
       autoscaleSettings: {
         maxThroughput: throughput
       }
-    }   
+    }
   }
 }
 
-  resource OrderProcessorLeasescontainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-    name: '${database.name}/${'OrderProcessorLeases'}'
-    properties: {
-      resource: {
-        id: 'OrderProcessorLeases'
-        partitionKey: {
-          paths: [
-            '/id'
-          ]
-        }      
-                 
+resource OrderProcessorLeasescontainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+  parent: database
+  name: 'OrderProcessorLeases'
+  properties: {
+    resource: {
+      id: 'OrderProcessorLeases'
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
       }
-      options: {
-        throughput: 400
-      }
+
+    }
+    options: {
+      throughput: 400
     }
   }
-
+}
