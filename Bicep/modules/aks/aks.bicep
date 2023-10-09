@@ -22,12 +22,12 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-previ
     agentPoolProfiles: [
       {
         name: 'default'
-        count: 2
+        count: 1
         // vmSize: 'Standard_D4s_v3'
         vmSize: 'standard_b4s_v2'
         mode: 'System'
-        maxCount: 5
-        minCount: 2
+        maxCount: 3
+        minCount: 1
         osType: 'Linux'
         osSKU: 'Ubuntu'
         enableAutoScaling: true
