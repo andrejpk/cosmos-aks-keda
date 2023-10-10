@@ -1,7 +1,15 @@
+## namespace 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel
+
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: otel-collector-conf
+  namespace: otel
   labels:
     app: opentelemetry
     component: otel-collector-conf
@@ -21,7 +29,8 @@ data:
         loglevel: debug
       azuremonitor:
         endpoint: "https://dc.services.visualstudio.com/v2/track"
-        instrumentation_key: "<INSTRUMENTATION-KEY>"
+        # SET APP INSIGHTS INSTRUMENTATION KEY HERE:
+        instrumentation_key: "{INSTRUMENTATION-KEY}"
         # maxbatchsize is the maximum number of items that can be
         # queued before calling to the configured endpoint
         maxbatchsize: 100
@@ -39,6 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: otel-collector
+  namespace: otel
   labels:
     app: opencesus
     component: otel-collector
@@ -55,6 +65,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: otel-collector
+  namespace: otel
   labels:
     app: opentelemetry
     component: otel-collector

@@ -223,8 +223,16 @@ To install the OpenTelemetry collector and configure it to send data to App Insi
 manifest with the Instrumentation Key from the deployed App Insights instance and deploy it:
 
 ```bash
-kubectl apply -f open-telemetry-collector-appinsights.yaml -n dapr-system
+kubectl apply  -f open-telemetry-collector-appinsights.yaml
 ```
+
+Now configure Dapr to use the cluster OpenTelemetry collector:
+
+```bash
+kubectl apply -f collector-config.yaml
+```
+
+Documentation: [Dapr OTEL Collector to App Insights](https://docs.dapr.io/operations/observability/tracing/otel-collector/open-telemetry-collector-appinsights/)
 
 ## Testing sample application locally on Docker
 
