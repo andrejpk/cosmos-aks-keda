@@ -81,5 +81,19 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-05-02-previ
   }
 }
 
+resource dapr 'Microsoft.KubernetesConfiguration/extensions@2022-03-01' = {
+  name: 'dapr'
+  scope: aksCluster
+  properties: {
+    extensionType: 'microsoft.dapr'
+    scope: {
+      cluster: {
+        releaseNamespace: 'dapr-system'
+      }
+    }
+    autoUpgradeMinorVersion: true
+  }
+}
+
 output oidcIssuerUrl string = aksCluster.properties.oidcIssuerProfile.issuerURL
 output clusterName string = aksCluster.name
