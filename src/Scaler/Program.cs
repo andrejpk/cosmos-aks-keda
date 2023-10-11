@@ -41,8 +41,8 @@ namespace Keda.CosmosDb.Scaler
                 // It is important to keep the LoggerFactory instance active throughout the process lifetime.            
                 .ConfigureLogging(builder => builder.AddOpenTelemetry(options =>
                 {
-                    options.AddAzureMonitorLogExporter()
-                ;})
+                    options.AddAzureMonitorLogExporter();
+                })
                 .AddSimpleConsole(options => options.TimestampFormat = "yyyy-MM-dd HH:mm:ss "))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

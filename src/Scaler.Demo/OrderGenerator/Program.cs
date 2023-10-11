@@ -9,12 +9,39 @@ using Microsoft.Extensions.Hosting;
 using Database = Microsoft.Azure.Cosmos.Database;
 using Azure.Identity;
 using System.Threading;
+using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace Keda.CosmosDb.Scaler.Demo.OrderGenerator
 {
     internal static class Program
     {
         private static CosmosDbConfig _cosmosDbConfig;
+
+        // Create a new tracer provider builder and add an Azure Monitor trace exporter to the tracer provider builder.
+        // It is important to keep the TracerProvider instance active throughout the process lifetime.
+        static OpenTelemetry.Trace.TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddAzureMonitorTraceExporter()
+            .AddSource("Azure.*")
+            .Build();
+
+        // Add an Azure Monitor metric exporter to the metrics provider builder.
+        // It is important to keep the MetricsProvider instance active throughout the process lifetime.
+        static MeterProvider metricsProvider = OpenTelemetry.Sdk.CreateMeterProviderBuilder()
+            .AddAzureMonitorMetricExporter()
+            .Build();
+
+        // Create a new logger factory.
+        // It is important to keep the LoggerFactory instance active throughout the process lifetime.
+        static LoggerFactory loggerFactory = (LoggerFactory)LoggerFactory.Create(builder =>
+        {
+            builder.AddOpenTelemetry(options =>
+            {
+                options.AddAzureMonitorLogExporter();
+            });
+        });
 
         public static async Task Main(string[] args)
         {
