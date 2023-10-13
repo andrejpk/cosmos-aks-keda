@@ -38,4 +38,5 @@ spec:
               value: https://sandbox-cosmos-aks-keda.documents.azure.com:443/ # update as per your environment
             - name: CosmosDbConfig__LeaseEndpoint
               value: https://sandbox-cosmos-aks-keda.documents.azure.com:443/ # update as per your environment
+            - name: APPLICATIONINSIGHTS_CONNECTION_STRING
 

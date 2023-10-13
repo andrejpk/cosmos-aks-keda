@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Azure.Identity;
 using System.ComponentModel;
+using System.Diagnostics;
 
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Container = Microsoft.Azure.Cosmos.Container;
@@ -98,7 +99,7 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
 
         private async Task ProcessOrdersAsync(IReadOnlyCollection<Order> orders, CancellationToken cancellationToken)
         {            
-            
+            using var proAct = Program.activitySource.StartActivity("ProcessOrdersAsync", ActivityKind.Server);
             _logger.LogInformation($"{orders.Count} order(s) received");
 
             foreach (Order order in orders)
