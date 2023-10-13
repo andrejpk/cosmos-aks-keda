@@ -7,7 +7,7 @@ metadata:
     aadpodidbinding: "cosmosdb-order-processor-identity"
     app: multi-partition-order-generator
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: multi-partition-order-generator
@@ -27,7 +27,7 @@ spec:
           requests:
             cpu: "0.5"
             memory: "500Mi"
-        args: ["false", "true","25"] # Run once and stop, generate multi partition data, Number of items to ingest per run
+        args: ["false", "false","25"] # Run once and stop, generate single partition data, Number of items to ingest per run
         env:
           - name: CosmosDbConfig__Endpoint
             value: https://sandbox-cosmos-aks-keda.documents.azure.com:443/  # update as per your environment
