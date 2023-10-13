@@ -16,6 +16,9 @@ metadata:
 data:
   otel-collector-config: |
     receivers:
+      otlp:
+        protocols:
+          grpc:
       zipkin:
         endpoint: 0.0.0.0:9411
     extensions:
@@ -30,19 +33,30 @@ data:
       azuremonitor:
         endpoint: "https://dc.services.visualstudio.com/v2/track"
         # SET APP INSIGHTS INSTRUMENTATION KEY HERE:
-        instrumentation_key: "{INSTRUMENTATION-KEY}"
+        instrumentation_key: "2a5c619f-d846-4496-917e-eb8128c7b49e"
         # maxbatchsize is the maximum number of items that can be
         # queued before calling to the configured endpoint
         maxbatchsize: 100
         # maxbatchinterval is the maximum time to wait before calling
         # the configured endpoint.
         maxbatchinterval: 10s
+      prometheus:
+        endpoint: :9102
+        resource_to_telemetry_conversion:
+          enabled: true
+        # send_timestamps: true
     service:
       extensions: [pprof, zpages, health_check]
       pipelines:
         traces:
-          receivers: [zipkin]
-          exporters: [azuremonitor,logging]
+          receivers: [otlp]
+          exporters: [azuremonitor]
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus]
+        logs:
+          receivers: [otlp]
+          exporters: [azuremonitor]
 ---
 apiVersion: v1
 kind: Service
@@ -58,6 +72,10 @@ spec:
     port: 9411
     protocol: TCP
     targetPort: 9411
+  - name: otlp
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
   selector:
     component: otel-collector
 ---
@@ -79,6 +97,8 @@ spec:
       labels:
         app: opentelemetry
         component: otel-collector
+      annotations:
+        prometheus.io/scrape: 'true'
     spec:
       containers:
       - name: otel-collector
@@ -95,6 +115,8 @@ spec:
             memory: 400Mi
         ports:
           - containerPort: 9411 # Default endpoint for Zipkin receiver.
+          - containerPort: 4317
+          - containerPort: 9102
         volumeMounts:
           - name: otel-collector-config-vol
             mountPath: /conf

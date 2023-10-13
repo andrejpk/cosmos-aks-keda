@@ -8,10 +8,8 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Azure.Identity;
-using System.ComponentModel;
 using System.Diagnostics;
 
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
@@ -99,11 +97,11 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
 
         private async Task ProcessOrdersAsync(IReadOnlyCollection<Order> orders, CancellationToken cancellationToken)
         {            
-            using var proAct = Program.activitySource.StartActivity("ProcessOrdersAsync", ActivityKind.Server);
             _logger.LogInformation($"{orders.Count} order(s) received");
 
             foreach (Order order in orders)
             {
+                using var proAct = Program.activitySource.StartActivity("ProcessOrdersAsync", ActivityKind.Server);
                 _logger.LogInformation($"Processing order {order.Id} - {order.Amount} unit(s) of {order.Article} bought by {order.Customer.FirstName} {order.Customer.LastName}");
 
                 // Add delay to fake the time consumed in processing the order.
