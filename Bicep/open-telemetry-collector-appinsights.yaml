@@ -21,6 +21,12 @@ data:
           grpc:
       zipkin:
         endpoint: 0.0.0.0:9411
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 4000
+        spike_limit_mib: 500
     extensions:
       health_check:
       pprof:
@@ -50,12 +56,15 @@ data:
       pipelines:
         traces:
           receivers: [otlp]
+          processors: [memory_limiter, batch]
           exporters: [azuremonitor]
         metrics:
           receivers: [otlp]
+          processors: [memory_limiter, batch]
           exporters: [prometheus]
         logs:
           receivers: [otlp]
+          processors: [memory_limiter, batch]
           exporters: [azuremonitor]
 ---
 apiVersion: v1
