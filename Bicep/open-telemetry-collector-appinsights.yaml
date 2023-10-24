@@ -55,15 +55,15 @@ data:
       extensions: [pprof, zpages, health_check]
       pipelines:
         traces:
-          receivers: [otlp]
+          receivers: [otlp, zipkin]
           processors: [memory_limiter, batch]
           exporters: [azuremonitor]
         metrics:
-          receivers: [otlp]
+          receivers: [otlp, zipkin]
           processors: [memory_limiter, batch]
           exporters: [prometheus]
         logs:
-          receivers: [otlp]
+          receivers: [otlp, zipkin]
           processors: [memory_limiter, batch]
           exporters: [azuremonitor]
 ---
